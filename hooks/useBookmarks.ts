@@ -68,11 +68,15 @@ export function useBookmarks(userId: string | undefined) {
     async (url: string, title: string) => {
       if (!userId) return { error: "Not authenticated" };
 
-      const { error: insertError } = await supabase.from("bookmarks").insert({
-        user_id: userId,
-        url,
-        title,
-      });
+      const { data, error: insertError } = await supabase
+        .from("bookmarks")
+        .insert({ user_id: userId, url, title })
+        .select()
+        .single();
+
+      if (!insertError && data) {
+        setBookmarks((prev) => [data, ...prev]);
+      }
 
       return { error: insertError?.message ?? null };
     },
@@ -81,14 +85,20 @@ export function useBookmarks(userId: string | undefined) {
 
   const deleteBookmark = useCallback(
     async (id: string) => {
+      setBookmarks((prev) => prev.filter((b) => b.id !== id));
+
       const { error: deleteError } = await supabase
         .from("bookmarks")
         .delete()
         .eq("id", id);
 
-      return { error: deleteError?.message ?? null };
+      if (deleteError) {
+        fetchBookmarks();
+        return { error: deleteError.message };
+      }
+      return { error: null };
     },
-    [supabase]
+    [supabase, fetchBookmarks]
   );
 
   return { bookmarks, loading, error, addBookmark, deleteBookmark };
