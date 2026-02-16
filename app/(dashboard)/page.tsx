@@ -1,12 +1,11 @@
 "use client";
 
-import AppShell from "@/components/AppShell";
 import LoginBackground from "@/components/LoginBackground";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
-  const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const { user, loading, signInWithGoogle } = useAuth();
 
   if (loading) {
     return (
@@ -70,15 +69,13 @@ export default function Home() {
   }
 
   return (
-    <AppShell user={user} onSignOut={signOut}>
-      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
-        <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50 sm:text-xl">
-          Welcome, {user.email}
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
-          You are logged in. Use the sidebar to navigate.
-        </p>
-      </div>
-    </AppShell>
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+      <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50 sm:text-xl">
+        Welcome, {user.email}
+      </h1>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
+        You are logged in. Use the sidebar to navigate.
+      </p>
+    </div>
   );
 }
