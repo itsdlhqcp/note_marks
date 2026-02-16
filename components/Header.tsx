@@ -9,10 +9,10 @@ interface HeaderProps {
 
 export default function Header({ user, onMenuClick }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-zinc-200 bg-white px-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+    <header className="sticky top-0 z-40 flex h-12 items-center gap-2 border-b border-zinc-200 bg-white px-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:h-14 sm:gap-4 sm:px-4">
       <button
         onClick={onMenuClick}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 sm:h-10 sm:w-10"
         aria-label="Toggle sidebar"
       >
         <svg
@@ -32,14 +32,14 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
         </svg>
       </button>
 
-      <div className="flex flex-1 items-center gap-2">
-        <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
+        <span className="truncate text-base font-semibold text-zinc-900 dark:text-zinc-50 sm:text-lg">
           Note Marks
         </span>
       </div>
 
       {user && (
-        <span className="hidden text-sm text-zinc-600 sm:inline dark:text-zinc-400">
+        <span className="hidden truncate text-xs text-zinc-600 sm:inline sm:max-w-[140px] sm:text-sm md:max-w-[200px] dark:text-zinc-400">
           {user.email}
         </span>
       )}

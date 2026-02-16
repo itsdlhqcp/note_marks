@@ -68,8 +68,10 @@ export default function Sidebar({
   return (
     <>
       <aside
-        className={`fixed left-0 top-14 z-30 flex h-[calc(100vh-3.5rem)] flex-col border-r border-zinc-200 bg-white transition-all duration-300 ease-in-out dark:border-zinc-800 dark:bg-zinc-950 ${
-          isOpen ? "w-64" : "w-0 overflow-hidden"
+        className={`fixed left-0 top-12 z-30 flex h-[calc(100vh-3rem)] flex-col border-r border-zinc-200 bg-white shadow-lg transition-all duration-300 ease-in-out dark:border-zinc-800 dark:bg-zinc-950 sm:top-14 sm:h-[calc(100vh-3.5rem)] lg:shadow-none ${
+          isOpen
+            ? "w-full max-w-[280px] sm:max-w-none sm:w-72 lg:w-64"
+            : "w-0 overflow-hidden"
         }`}
       >
         <nav className="flex flex-1 flex-col gap-1 p-4">
@@ -103,16 +105,16 @@ export default function Sidebar({
           onClick={handleLogoutCancel}
         >
           <div
-            className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+            className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 sm:text-lg">
               Log out?
             </h3>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">
               Are you sure you want to log out of your account?
             </p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:gap-3">
               <button
                 onClick={handleLogoutCancel}
                 className="flex-1 rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"

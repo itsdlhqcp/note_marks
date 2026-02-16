@@ -9,7 +9,7 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4 dark:bg-zinc-950">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
       </main>
     );
@@ -17,25 +17,25 @@ export default function Home() {
 
   if (!user) {
     return (
-      <main className="relative flex min-h-screen items-center justify-center px-4">
+      <main className="relative flex min-h-screen items-center justify-center px-4 py-6 sm:py-8">
         <LoginBackground />
         <div className="relative z-10 w-full max-w-md">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-xl shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-none">
-            <div className="mb-8 text-center">
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-none sm:p-8">
+            <div className="mb-6 text-center sm:mb-8">
+              <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl">
                 Note Marks
               </h1>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
                 Sign in to continue to your workspace
               </p>
             </div>
 
             <button
               onClick={signInWithGoogle}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-zinc-200 bg-white px-5 py-3.5 font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-3 font-medium text-zinc-700 shadow-sm transition-colors hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 sm:gap-3 sm:px-5 sm:py-3.5"
             >
               <svg
-                className="h-5 w-5 shrink-0"
+                className="h-4 w-4 shrink-0 sm:h-5 sm:w-5"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -59,7 +59,7 @@ export default function Home() {
               <span>Continue with Google</span>
             </button>
 
-            <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
+            <p className="mt-4 text-center text-[10px] text-zinc-400 sm:mt-6 sm:text-xs dark:text-zinc-500">
               By signing in, you agree to our terms of service and privacy
               policy.
             </p>
@@ -71,11 +71,11 @@ export default function Home() {
 
   return (
     <AppShell user={user} onSignOut={signOut}>
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+        <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50 sm:text-xl">
           Welcome, {user.email}
         </h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
           You are logged in. Use the sidebar to navigate.
         </p>
       </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/contexts/AuthContext";
+import NetworkStatus from "@/components/NetworkStatus";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,9 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-white font-sans text-zinc-900 antialiased dark:bg-zinc-900 dark:text-zinc-50`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen overflow-x-hidden bg-white font-sans text-zinc-900 antialiased dark:bg-zinc-900 dark:text-zinc-50`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <NetworkStatus />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
