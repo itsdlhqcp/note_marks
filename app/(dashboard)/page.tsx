@@ -1,8 +1,11 @@
 "use client";
 
+import AddBookmarkForm from "@/components/AddBookmarkForm";
+import BookmarkList from "@/components/BookmarkList";
 import LoginBackground from "@/components/LoginBackground";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
+import { useBookmarks } from "@/hooks/useBookmarks";
 
 export default function Home() {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -69,13 +72,45 @@ export default function Home() {
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
-      <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50 sm:text-xl">
-        Welcome, {user.email}
-      </h1>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
-        You are logged in. Use the sidebar to navigate.
-      </p>
+    <DashboardContent userId={user.id} />
+  );
+}
+
+function DashboardContent({ userId }: { userId: string }) {
+  const { bookmarks, loading, error, addBookmark, deleteBookmark } =
+    useBookmarks(userId);
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+        <h1 className="truncate text-lg font-semibold text-zinc-900 dark:text-zinc-50 sm:text-xl">
+          Bookmarks
+        </h1>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 sm:text-base">
+          Add and manage your bookmarks. Changes sync in real-time across tabs.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+        <h2 className="mb-4 text-base font-medium text-zinc-900 dark:text-zinc-50">
+          Add bookmark
+        </h2>
+        <AddBookmarkForm onSubmit={addBookmark} />
+      </div>
+
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 sm:p-6">
+        <h2 className="mb-4 text-base font-medium text-zinc-900 dark:text-zinc-50">
+          Your bookmarks
+        </h2>
+        {error && (
+          <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
+        <BookmarkList
+          bookmarks={bookmarks}
+          loading={loading}
+          onDelete={deleteBookmark}
+        />
+      </div>
     </div>
   );
 }
