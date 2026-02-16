@@ -6,16 +6,27 @@ import type { Bookmark } from "@/types/bookmark";
 interface BookmarkListProps {
   bookmarks: Bookmark[];
   loading: boolean;
+  onUpdate: (
+    id: string,
+    url: string,
+    title: string
+  ) => Promise<{ error: string | null }>;
   onDelete: (id: string) => Promise<{ error: string | null }>;
 }
 
 export default function BookmarkList({
   bookmarks,
   loading,
+  onUpdate,
   onDelete,
 }: BookmarkListProps) {
+  const [bookmarkToEdit, setBookmarkToEdit] = useState<Bookmark | null>(null);
   const [bookmarkToDelete, setBookmarkToDelete] = useState<Bookmark | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleEditClick = (bookmark: Bookmark) => {
+    setBookmarkToEdit(bookmark);
+  };
 
   const handleDeleteClick = (bookmark: Bookmark) => {
     setBookmarkToDelete(bookmark);
@@ -73,18 +84,40 @@ export default function BookmarkList({
             >
               {bookmark.url}
             </a>
-            <button
-              type="button"
-              onClick={() => handleDeleteClick(bookmark)}
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => handleEditClick(bookmark)}
+                className="rounded p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                aria-label={`Edit ${bookmark.title}`}
+              >
+                <EditIcon />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteClick(bookmark)}
               disabled={deletingId === bookmark.id}
               className="shrink-0 rounded p-1.5 text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-              aria-label={`Delete ${bookmark.title}`}
-            >
-              <TrashIcon />
-            </button>
+                aria-label={`Delete ${bookmark.title}`}
+              >
+                <TrashIcon />
+              </button>
+            </div>
           </li>
         ))}
       </ul>
+
+      {bookmarkToEdit && (
+        <EditBookmarkModal
+          bookmark={bookmarkToEdit}
+          onSave={async (url, title) => {
+            const result = await onUpdate(bookmarkToEdit.id, url, title);
+            if (!result.error) setBookmarkToEdit(null);
+            return result;
+          }}
+          onCancel={() => setBookmarkToEdit(null)}
+        />
+      )}
 
       {bookmarkToDelete && (
         <div
@@ -121,6 +154,143 @@ export default function BookmarkList({
         </div>
       )}
     </>
+  );
+}
+
+function EditBookmarkModal({
+  bookmark,
+  onSave,
+  onCancel,
+}: {
+  bookmark: Bookmark;
+  onSave: (
+    url: string,
+    title: string
+  ) => Promise<{ error: string | null }>;
+  onCancel: () => void;
+}) {
+  const [url, setUrl] = useState(bookmark.url);
+  const [title, setTitle] = useState(bookmark.title);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const trimmedUrl = url.trim();
+    const trimmedTitle = title.trim();
+
+    if (!trimmedUrl || !trimmedTitle) {
+      setError("URL and title are required");
+      return;
+    }
+
+    try {
+      const urlObj = new URL(trimmedUrl);
+      if (!["http:", "https:"].includes(urlObj.protocol)) {
+        setError("URL must start with http:// or https://");
+        return;
+      }
+    } catch {
+      setError("Please enter a valid URL");
+      return;
+    }
+
+    setSubmitting(true);
+    const result = await onSave(trimmedUrl, trimmedTitle);
+    setSubmitting(false);
+
+    if (result.error) {
+      setError(result.error);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 sm:text-lg">
+          Edit bookmark
+        </h3>
+        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+          <div>
+            <label
+              htmlFor="edit-bookmark-url"
+              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              URL
+            </label>
+            <input
+              id="edit-bookmark-url"
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:border-zinc-600 dark:focus:ring-zinc-600"
+              disabled={submitting}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="edit-bookmark-title"
+              className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              Title
+            </label>
+            <input
+              id="edit-bookmark-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="My bookmark"
+              className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder-zinc-500 dark:focus:border-zinc-600 dark:focus:ring-zinc-600"
+              disabled={submitting}
+            />
+          </div>
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            >
+              {submitting ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
   );
 }
 

@@ -77,7 +77,7 @@ export default function Home() {
 }
 
 function DashboardContent({ userId }: { userId: string }) {
-  const { bookmarks, loading, error, addBookmark, deleteBookmark } =
+  const { bookmarks, loading, error, addBookmark, updateBookmark, deleteBookmark } =
     useBookmarks(userId);
 
   return (
@@ -108,6 +108,7 @@ function DashboardContent({ userId }: { userId: string }) {
         <BookmarkList
           bookmarks={bookmarks}
           loading={loading}
+          onUpdate={updateBookmark}
           onDelete={deleteBookmark}
         />
       </div>

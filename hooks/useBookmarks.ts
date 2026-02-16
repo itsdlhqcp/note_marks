@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Bookmark } from "@/types/bookmark";
+
+const BOOKMARKS_SYNC_CHANNEL = "note-marks-bookmarks-sync";
 
 export function useBookmarks(userId: string | undefined) {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -10,6 +12,7 @@ export function useBookmarks(userId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
+  const fetchBookmarksRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   const fetchBookmarks = useCallback(async () => {
     if (!userId) {
@@ -36,6 +39,8 @@ export function useBookmarks(userId: string | undefined) {
     setLoading(false);
   }, [userId, supabase]);
 
+  fetchBookmarksRef.current = fetchBookmarks;
+
   useEffect(() => {
     fetchBookmarks();
   }, [fetchBookmarks]);
@@ -44,7 +49,7 @@ export function useBookmarks(userId: string | undefined) {
     if (!userId) return;
 
     const channel = supabase
-      .channel("bookmarks-changes")
+      .channel(`bookmarks-${userId}`)
       .on(
         "postgres_changes",
         {
@@ -54,7 +59,7 @@ export function useBookmarks(userId: string | undefined) {
           filter: `user_id=eq.${userId}`,
         },
         () => {
-          fetchBookmarks();
+          fetchBookmarksRef.current();
         }
       )
       .subscribe();
@@ -62,7 +67,32 @@ export function useBookmarks(userId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, supabase, fetchBookmarks]);
+  }, [userId, supabase]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const bc = new BroadcastChannel(BOOKMARKS_SYNC_CHANNEL);
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === "bookmarks-changed" && e.data?.userId === userId) {
+        fetchBookmarksRef.current();
+      }
+    };
+    bc.addEventListener("message", handler);
+    return () => {
+      bc.removeEventListener("message", handler);
+      bc.close();
+    };
+  }, [userId]);
+
+  const broadcastBookmarksChanged = useCallback(() => {
+    if (typeof BroadcastChannel !== "undefined" && userId) {
+      new BroadcastChannel(BOOKMARKS_SYNC_CHANNEL).postMessage({
+        type: "bookmarks-changed",
+        userId,
+      });
+    }
+  }, [userId]);
 
   const addBookmark = useCallback(
     async (url: string, title: string) => {
@@ -76,11 +106,33 @@ export function useBookmarks(userId: string | undefined) {
 
       if (!insertError && data) {
         setBookmarks((prev) => [data, ...prev]);
+        broadcastBookmarksChanged();
       }
 
       return { error: insertError?.message ?? null };
     },
-    [userId, supabase]
+    [userId, supabase, broadcastBookmarksChanged]
+  );
+
+  const updateBookmark = useCallback(
+    async (id: string, url: string, title: string) => {
+      const { data, error: updateError } = await supabase
+        .from("bookmarks")
+        .update({ url, title })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (!updateError && data) {
+        setBookmarks((prev) =>
+          prev.map((b) => (b.id === id ? data : b))
+        );
+        broadcastBookmarksChanged();
+      }
+
+      return { error: updateError?.message ?? null };
+    },
+    [supabase, broadcastBookmarksChanged]
   );
 
   const deleteBookmark = useCallback(
@@ -96,10 +148,11 @@ export function useBookmarks(userId: string | undefined) {
         fetchBookmarks();
         return { error: deleteError.message };
       }
+      broadcastBookmarksChanged();
       return { error: null };
     },
-    [supabase, fetchBookmarks]
+    [supabase, fetchBookmarks, broadcastBookmarksChanged]
   );
 
-  return { bookmarks, loading, error, addBookmark, deleteBookmark };
+  return { bookmarks, loading, error, addBookmark, updateBookmark, deleteBookmark };
 }
