@@ -35,7 +35,7 @@ export default function AppShell({ user, onSignOut, children }: AppShellProps) {
       <Sidebar isOpen={sidebarOpen} onSignOut={onSignOut} />
       <main
         className={`min-h-[calc(100vh-3rem)] transition-all duration-300 sm:min-h-[calc(100vh-3.5rem)] ${
-          sidebarOpen ? "lg:ml-64" : "ml-0"
+          sidebarOpen ? "lg:ml-64" : "lg:ml-20"
         }`}
       >
         <div className="p-4 sm:p-6">{children}</div>

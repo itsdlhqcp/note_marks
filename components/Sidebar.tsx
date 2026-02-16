@@ -64,36 +64,40 @@ export default function Sidebar({
         className={`fixed left-0 top-12 z-30 flex h-[calc(100vh-3rem)] flex-col border-r border-zinc-200 bg-white shadow-lg transition-all duration-300 ease-in-out dark:border-zinc-800 dark:bg-zinc-950 sm:top-14 sm:h-[calc(100vh-3.5rem)] lg:shadow-none ${
           isOpen
             ? "w-full max-w-[280px] sm:max-w-none sm:w-72 lg:w-64"
-            : "w-0 overflow-hidden"
+            : "w-0 overflow-hidden lg:w-20 lg:overflow-visible"
         }`}
       >
-        <nav className="flex flex-1 flex-col gap-1 p-4">
+        <nav className="flex flex-1 flex-col gap-1 p-2 lg:p-3">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 ${
+                title={!isOpen ? item.label : undefined}
+                className={`flex items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 ${
+                  isOpen ? "lg:justify-start lg:gap-3" : ""
+                } ${
                   isActive
                     ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
                     : "text-zinc-700 dark:text-zinc-300"
                 }`}
               >
                 {item.icon}
-                <span>{item.label}</span>
+                <span className={`hidden lg:inline ${isOpen ? "" : "lg:hidden"}`}>{item.label}</span>
               </Link>
             );
           })}
         </nav>
         {onSignOut && (
-          <div className="border-t border-zinc-200 p-4 dark:border-zinc-800">
+          <div className="border-t border-zinc-200 p-2 dark:border-zinc-800 lg:p-3">
             <button
               onClick={handleLogoutClick}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+              title={!isOpen ? "Logout" : undefined}
+              className={`flex w-full items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950 ${isOpen ? "lg:justify-start lg:gap-3" : ""}`}
             >
               <LogoutIcon />
-              <span>Logout</span>
+              <span className={`hidden lg:inline ${isOpen ? "" : "lg:hidden"}`}>Logout</span>
             </button>
           </div>
         )}
