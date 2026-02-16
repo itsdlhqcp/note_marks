@@ -61,11 +61,14 @@ export default function Sidebar({
   return (
     <>
       <aside
-        className={`fixed left-0 top-12 z-30 flex h-[calc(100vh-3rem)] flex-col border-r border-zinc-200 bg-white shadow-lg transition-all duration-300 ease-in-out dark:border-zinc-800 dark:bg-zinc-950 sm:top-14 sm:h-[calc(100vh-3.5rem)] lg:shadow-none ${
-          isOpen
-            ? "w-full max-w-[280px] sm:max-w-none sm:w-72 lg:w-64"
-            : "w-0 overflow-hidden lg:w-20 lg:overflow-visible"
-        }`}
+        className={`fixed left-0 top-12 z-30 flex h-[calc(100vh-3rem)] flex-col border-r border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-950 sm:top-14 sm:h-[calc(100vh-3.5rem)] lg:shadow-none
+          w-[280px] max-w-[85vw]
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+          lg:transition-[width] lg:duration-300 lg:ease-in-out
+          ${isOpen ? "lg:w-64" : "lg:w-20 lg:overflow-visible"}
+          ${!isOpen ? "pointer-events-none lg:pointer-events-auto" : ""}`}
       >
         <nav className="flex flex-1 flex-col gap-2 p-2 lg:p-3">
           {navItems.map((item) => {

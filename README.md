@@ -385,9 +385,15 @@ Open [http://localhost:3000](http://localhost:3000).
 | Script | Description |
 |--------|-------------|
 | `npm run dev` | Start dev server |
+| `npm run demo` | Start app for demo (same as dev) |
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+
+### Demo & Documentation
+
+- **`docs/DEMO_SCRIPT.md`** — Step-by-step script for presenting the project in a demo
+- **`docs/PROJECT_EXPLANATION.md`** — Point-by-point technical explanation of the codebase
 
 ---
 

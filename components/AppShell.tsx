@@ -25,13 +25,13 @@ export default function AppShell({ user, onSignOut, children }: AppShellProps) {
         user={user}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
       />
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-20 bg-black/50 transition-opacity duration-300 ease-in-out lg:hidden ${
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden
+      />
       <Sidebar isOpen={sidebarOpen} onSignOut={onSignOut} />
       <main
         className={`min-h-[calc(100vh-3rem)] transition-all duration-300 sm:min-h-[calc(100vh-3.5rem)] ${
