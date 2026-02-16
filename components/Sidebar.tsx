@@ -67,7 +67,7 @@ export default function Sidebar({
             : "w-0 overflow-hidden lg:w-20 lg:overflow-visible"
         }`}
       >
-        <nav className="flex flex-1 flex-col gap-1 p-2 lg:p-3">
+        <nav className="flex flex-1 flex-col gap-2 p-2 lg:p-3">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
             return (
@@ -75,16 +75,18 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 title={!isOpen ? item.label : undefined}
-                className={`flex items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 ${
-                  isOpen ? "lg:justify-start lg:gap-3" : ""
+                className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 ${
+                  isOpen ? "gap-3" : "justify-center"
                 } ${
                   isActive
                     ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-50"
                     : "text-zinc-700 dark:text-zinc-300"
                 }`}
               >
-                {item.icon}
-                <span className={`hidden lg:inline ${isOpen ? "" : "lg:hidden"}`}>{item.label}</span>
+                <span className={!isOpen ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800/50" : ""}>
+                  {item.icon}
+                </span>
+                {isOpen && <span>{item.label}</span>}
               </Link>
             );
           })}
@@ -94,10 +96,14 @@ export default function Sidebar({
             <button
               onClick={handleLogoutClick}
               title={!isOpen ? "Logout" : undefined}
-              className={`flex w-full items-center justify-center rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950 ${isOpen ? "lg:justify-start lg:gap-3" : ""}`}
+              className={`flex w-full items-center rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950 ${
+                isOpen ? "gap-3" : "justify-center"
+              }`}
             >
-              <LogoutIcon />
-              <span className={`hidden lg:inline ${isOpen ? "" : "lg:hidden"}`}>Logout</span>
+              <span className={!isOpen ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30" : ""}>
+                <LogoutIcon />
+              </span>
+              {isOpen && <span>Logout</span>}
             </button>
           </div>
         )}
