@@ -1,43 +1,396 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Note Marks
+
+A bookmark management web application built with Next.js and Supabase. Users can sign in with Google, add, edit, and delete bookmarks, with real-time sync across tabs and devices.
+
+---
+
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Tech Stack](#tech-stack)
+- [Data Models](#data-models)
+- [Technical Flows](#technical-flows)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+
+---
+
+## Architecture Overview
+
+Note Marks follows a **client-first SPA-style architecture** with a Next.js App Router frontend and Supabase as the backend (PostgreSQL + Auth + Realtime).
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         CLIENT (Browser)                                 │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │  Next.js App Router (React 19)                                    │  │
+│  │  • Route Groups: (dashboard) for /, /settings                      │  │
+│  │  • Client Components for interactivity                            │  │
+│  │  • Contexts: AuthProvider, ThemeProvider                           │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                    │                                    │
+│  ┌────────────────────────────────┼────────────────────────────────┐  │
+│  │  Supabase Client (Browser)      │  BroadcastChannel (cross-tab)   │  │
+│  │  • Auth (OAuth, session)        │  • Sync bookmarks across tabs   │  │
+│  │  • PostgREST (CRUD)             │                                 │  │
+│  │  • Realtime (postgres_changes)  │                                 │  │
+│  └────────────────────────────────┴────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+                                      │
+                                      ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         SERVER (Supabase)                                │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────────┐ │
+│  │ Auth (GoTrue)│  │  PostgreSQL  │  │ Realtime (postgres_changes)     │ │
+│  │ • Google OAuth│  │ • bookmarks │  │ • Publishes INSERT/UPDATE/DELETE│ │
+│  │ • JWT sessions│  │ • RLS       │  │ • Filtered by user_id           │ │
+│  └──────────────┘  └──────────────┘  └──────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Architectural Decisions
+
+| Decision | Rationale |
+|----------|-----------|
+| **Supabase** | Backend-as-a-Service: Auth, DB, Realtime in one platform; Row Level Security for multi-tenant isolation |
+| **Next.js App Router** | File-based routing, Server Components where useful, middleware for session refresh |
+| **Client Components** | Most UI is interactive (auth, forms, real-time); `"use client"` used where needed |
+| **BroadcastChannel + Realtime** | Keeps bookmarks in sync across tabs and devices without polling |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Framework** | Next.js 16 (App Router) |
+| **UI** | React 19, Tailwind CSS 4 |
+| **Backend** | Supabase (PostgreSQL, Auth, Realtime) |
+| **Auth** | Supabase Auth (Google OAuth) |
+| **Data Access** | `@supabase/supabase-js`, `@supabase/ssr` |
+| **Language** | TypeScript 5 |
+
+---
+
+## Data Models
+
+### Bookmark
+
+The only domain entity. Stored in `public.bookmarks`.
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `id` | `uuid` | PK, default `gen_random_uuid()` | Unique identifier |
+| `user_id` | `uuid` | NOT NULL, FK → `auth.users(id)` ON DELETE CASCADE | Owner; links to Supabase Auth user |
+| `url` | `text` | NOT NULL | Bookmark URL (http/https) |
+| `title` | `text` | NOT NULL | Display title |
+| `created_at` | `timestamptz` | NOT NULL, default `now()` | Creation timestamp |
+
+**Indexes**
+
+- `bookmarks_user_id_idx` on `user_id` for fast lookups by user
+
+**Row Level Security (RLS)**
+
+- `SELECT`: `auth.uid() = user_id`
+- `INSERT`: `auth.uid() = user_id`
+- `UPDATE`: `auth.uid() = user_id`
+- `DELETE`: `auth.uid() = user_id`
+
+**Realtime**
+
+- Table uses `REPLICA IDENTITY FULL` so DELETE/UPDATE events include full row data
+- Table added to `supabase_realtime` publication for `postgres_changes`
+
+### TypeScript Interface
+
+```typescript
+// types/bookmark.ts
+interface Bookmark {
+  id: string;
+  user_id: string;
+  url: string;
+  title: string;
+  created_at: string;
+}
+```
+
+### Auth User (Supabase)
+
+- Managed by Supabase Auth (`auth.users`)
+- Used via `User` from `@supabase/supabase-js`
+- No custom user table; `user_id` in `bookmarks` references `auth.users(id)`
+
+---
+
+## Technical Flows
+
+### 1. Authentication Flow
+
+```
+┌──────────┐     ┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
+│  User    │────▶│ Sign in     │────▶│ Supabase OAuth   │────▶│ Google      │
+│  clicks  │     │ with Google │     │ redirect         │     │ consent     │
+└──────────┘     └─────────────┘     └──────────────────┘     └─────────────┘
+                                                                     │
+                                                                     ▼
+┌──────────┐     ┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
+│ Dashboard│◀────│ AuthContext │◀────│ /auth/callback   │◀────│ Redirect    │
+│ rendered │     │ user set    │     │ exchange code    │     │ with code   │
+└──────────┘     └─────────────┘     └──────────────────┘     └─────────────┘
+```
+
+**Steps**
+
+1. User clicks "Continue with Google" → `AuthContext.signInWithGoogle()` calls `supabase.auth.signInWithOAuth({ provider: "google" })`.
+2. Supabase redirects to Google; user consents.
+3. Google redirects to `/auth/callback?code=...`.
+4. `app/auth/callback/route.ts` uses `supabase.auth.exchangeCodeForSession(code)` to create a session and set cookies.
+5. Response redirects to `/` (or `next` param).
+6. `AuthContext` listens via `onAuthStateChange`; `user` is set and dashboard renders.
+
+**Session handling**
+
+- **Middleware** (`middleware.ts`): Runs on every request; `updateSession()` calls `supabase.auth.getUser()` to refresh the session and update cookies.
+- **Client**: `createClient()` from `lib/supabase/client.ts` uses `createBrowserClient`; cookies are sent automatically.
+- **Server**: `createClient()` from `lib/supabase/server.ts` uses `createServerClient` with `cookies()` from Next.js.
+
+---
+
+### 2. Bookmark CRUD Flow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ AddBookmarkForm │     │ useBookmarks     │     │ Supabase        │
+│ / BookmarkList  │────▶│ add/update/delete│────▶│ PostgREST       │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+         │                        │                        │
+         │                        │                        ▼
+         │                        │               ┌─────────────────┐
+         │                        │               │ PostgreSQL      │
+         │                        │               │ (RLS enforced)  │
+         │                        │               └─────────────────┘
+         │                        │
+         │                        ▼
+         │               ┌─────────────────┐
+         │               │ Optimistic UI    │
+         │               │ + broadcast      │
+         └───────────────│ BroadcastChannel│
+                         └─────────────────┘
+```
+
+**Add bookmark**
+
+1. User submits form → `AddBookmarkForm` calls `onSubmit(url, title)`.
+2. `useBookmarks.addBookmark()` inserts into `bookmarks` with `user_id` from auth.
+3. On success: local state updated, `broadcastBookmarksChanged()` called.
+4. Other tabs receive BroadcastChannel message and refetch.
+
+**Update bookmark**
+
+1. User edits in `EditBookmarkModal` → `onUpdate(id, url, title)`.
+2. `useBookmarks.updateBookmark()` runs `update().eq('id', id)`.
+3. On success: local state updated, broadcast sent.
+
+**Delete bookmark**
+
+1. User confirms in delete modal → `onDelete(id)`.
+2. `useBookmarks.deleteBookmark()` optimistically removes from state, then calls `delete().eq('id', id)`.
+3. On error: refetch to restore state. On success: broadcast sent.
+
+---
+
+### 3. Real-Time Sync Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Tab A                    Supabase Realtime              Tab B          │
+│  ┌─────────────┐         ┌─────────────────────┐       ┌─────────────┐ │
+│  │ Add bookmark│────────▶│ postgres_changes     │──────▶│ Refetch     │ │
+│  │ (INSERT)    │         │ filter: user_id=eq.X │       │ bookmarks   │ │
+│  └─────────────┘         └─────────────────────┘       └─────────────┘ │
+│                                                                         │
+│  ┌─────────────┐         ┌─────────────────────┐       ┌─────────────┐ │
+│  │ Broadcast   │────────▶│ BroadcastChannel     │──────▶│ Refetch     │ │
+│  │ Channel     │         │ note-marks-bookmarks │       │ bookmarks   │ │
+│  └─────────────┘         └─────────────────────┘       └─────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Dual sync strategy**
+
+1. **Supabase Realtime**: Subscribes to `postgres_changes` on `bookmarks` with `user_id=eq.{userId}`. Any INSERT/UPDATE/DELETE from any client triggers a refetch.
+2. **BroadcastChannel**: After local mutations, `broadcastBookmarksChanged()` notifies other tabs in the same browser. Those tabs refetch without waiting for Realtime.
+
+---
+
+### 4. Theme Flow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ Settings page   │────▶│ ThemeContext     │────▶│ document.document│
+│ toggleTheme()   │     │ setTheme()       │     │ Element.classList│
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │ localStorage    │
+                        │ note-marks-theme│
+                        └─────────────────┘
+```
+
+- Theme stored in `localStorage` under `note-marks-theme` (`"light"` | `"dark"`).
+- Root layout injects a script to apply theme before paint to avoid flash.
+- `ThemeContext` syncs `document.documentElement.classList` with `dark` and persists to `localStorage`.
+
+---
+
+### 5. Network Status Flow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│ navigator.onLine│     │ NetworkStatus   │     │ Connection API   │
+│ online/offline  │────▶│ connectionState │◀────│ effectiveType   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │ Banner + link   │
+                        │ /network-slow   │
+                        └─────────────────┘
+```
+
+- `NetworkStatus` listens to `online`, `offline`, and `connection.change`.
+- States: `online`, `offline`, `slow` (slow-2g, 2g, 3g).
+- When not `online`, shows a banner and a link to `/network-slow` for tips.
+
+---
+
+### 6. Route & Layout Flow
+
+```
+app/
+├── layout.tsx              # Root: ThemeProvider, AuthProvider, NetworkStatus
+├── (dashboard)/
+│   ├── layout.tsx           # Dashboard: auth guard, AppShell when logged in
+│   ├── page.tsx             # / : Login or DashboardContent
+│   └── settings/
+│       └── page.tsx         # /settings : Theme toggle
+├── network-slow/
+│   └── page.tsx             # /network-slow : Connection tips
+└── auth/
+    └── callback/
+        └── route.ts         # /auth/callback : OAuth code exchange
+```
+
+**Auth guard (dashboard layout)**
+
+- If `!user && !loading` and path ≠ `/` → redirect to `/`.
+- If `loading` → show spinner.
+- If `user` → render `AppShell` (Header + Sidebar + main content).
+
+---
+
+## Project Structure
+
+```
+note_marks/
+├── app/
+│   ├── layout.tsx              # Root layout
+│   ├── globals.css             # Tailwind + theme keyframes
+│   ├── (dashboard)/
+│   │   ├── layout.tsx          # Dashboard layout (auth + AppShell)
+│   │   ├── page.tsx            # Home: login or bookmarks
+│   │   └── settings/
+│   │       └── page.tsx        # Settings: theme
+│   ├── network-slow/
+│   │   └── page.tsx            # Network tips page
+│   └── auth/
+│       └── callback/
+│           └── route.ts        # OAuth callback handler
+├── components/
+│   ├── AppShell.tsx            # Header + Sidebar + main wrapper
+│   ├── Header.tsx              # Top bar, logo, menu toggle
+│   ├── Sidebar.tsx             # Nav (Dashboard, Settings), Logout
+│   ├── Logo.tsx                # App logo
+│   ├── AddBookmarkForm.tsx     # Add bookmark form
+│   ├── BookmarkList.tsx        # List + edit/delete modals
+│   ├── LoginBackground.tsx     # Login page background
+│   └── NetworkStatus.tsx       # Connection banner
+├── contexts/
+│   ├── AuthContext.tsx         # Auth state, signIn, signOut
+│   └── ThemeContext.tsx       # Theme state, toggle
+├── hooks/
+│   └── useBookmarks.ts        # CRUD + Realtime + BroadcastChannel
+├── lib/
+│   ├── supabase.ts            # getSupabase (legacy)
+│   └── supabase/
+│       ├── client.ts          # Browser Supabase client
+│       ├── server.ts          # Server Supabase client
+│       └── middleware.ts      # Session refresh
+├── types/
+│   └── bookmark.ts            # Bookmark interface
+├── supabase/
+│   └── migrations/
+│       ├── 20250216000000_create_bookmarks_table.sql
+│       ├── 20250216000001_add_bookmarks_rls_policies.sql
+│       └── 20250216000002_enable_bookmarks_realtime.sql
+├── middleware.ts              # Runs updateSession on matched routes
+├── package.json
+├── next.config.ts
+└── README.md
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 20+
+- Supabase project
+
+### Environment Variables
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Supabase Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Enable Google OAuth in Supabase Dashboard → Authentication → Providers.
+2. Add redirect URL: `http://localhost:3000/auth/callback` (and production URL).
+3. Run migrations:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+supabase db push
+```
 
-## Authentication
+Or apply the SQL in `supabase/migrations/` manually.
 
-Google OAuth is configured via Supabase. In Supabase Dashboard:
+### Run Locally
 
-1. **Authentication → URL Configuration**: Add `http://localhost:3000/auth/callback` to Redirect URLs (and your production URL when deploying).
-2. **Authentication → Providers**: Enable Google and add OAuth credentials from [Google Cloud Console](https://console.cloud.google.com).
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000).
 
-To learn more about Next.js, take a look at the following resources:
+### Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start dev server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private project.
