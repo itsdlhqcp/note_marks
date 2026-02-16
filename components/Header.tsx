@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "@supabase/supabase-js";
+import Logo from "./Logo";
 
 interface HeaderProps {
   user: User | null;
@@ -33,9 +34,7 @@ export default function Header({ user, onMenuClick }: HeaderProps) {
       </button>
 
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <span className="truncate text-base font-semibold text-zinc-900 dark:text-zinc-50 sm:text-lg">
-          Note Marks
-        </span>
+        <Logo size="sm" showText={true} />
       </div>
 
       {user && (

@@ -2,6 +2,7 @@
 
 import AppShell from "@/components/AppShell";
 import LoginBackground from "@/components/LoginBackground";
+import Logo from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
@@ -9,7 +10,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4 dark:bg-zinc-950">
+      <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-100 px-4 dark:bg-zinc-950">
+        <Logo size="lg" showText={true} />
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
       </main>
     );
@@ -21,10 +23,8 @@ export default function Home() {
         <LoginBackground />
         <div className="relative z-10 w-full max-w-md">
           <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-200/50 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-none sm:p-8">
-            <div className="mb-6 text-center sm:mb-8">
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-2xl">
-                Note Marks
-              </h1>
+            <div className="mb-6 flex flex-col items-center text-center sm:mb-8">
+              <Logo size="lg" showText={true} />
               <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400 sm:text-sm">
                 Sign in to continue to your workspace
               </p>

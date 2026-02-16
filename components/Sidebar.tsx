@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Logo from "./Logo";
 
 interface NavItem {
   label: string;
@@ -74,6 +75,9 @@ export default function Sidebar({
             : "w-0 overflow-hidden"
         }`}
       >
+        <div className="border-b border-zinc-200 px-4 py-4 dark:border-zinc-800">
+          <Logo size="sm" showText={true} />
+        </div>
         <nav className="flex flex-1 flex-col gap-1 p-4">
           {navItems.map((item) => (
             <a

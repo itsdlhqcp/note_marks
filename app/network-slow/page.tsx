@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function NetworkSlowPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mb-6 flex justify-center">
+          <Logo size="lg" showText={true} />
+        </div>
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
           <svg
             className="h-8 w-8 text-amber-600 dark:text-amber-400"
