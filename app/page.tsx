@@ -1,29 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import AppShell from "@/components/AppShell";
 import LoginBackground from "@/components/LoginBackground";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
+  const { user, loading, signInWithGoogle, signOut } = useAuth();
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
-  }, []);
-
-  const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-    });
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-  };
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
+      </main>
+    );
+  }
 
   if (!user) {
     return (
@@ -70,7 +60,8 @@ export default function Home() {
             </button>
 
             <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
-              By signing in, you agree to our terms of service and privacy policy.
+              By signing in, you agree to our terms of service and privacy
+              policy.
             </p>
           </div>
         </div>

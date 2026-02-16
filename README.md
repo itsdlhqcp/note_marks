@@ -22,7 +22,10 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Authentication
 
-Google OAuth is configured via Supabase. Enable the Google provider in Supabase Dashboard → Authentication → Providers, and add your Google OAuth credentials from [Google Cloud Console](https://console.cloud.google.com).
+Google OAuth is configured via Supabase. In Supabase Dashboard:
+
+1. **Authentication → URL Configuration**: Add `http://localhost:3000/auth/callback` to Redirect URLs (and your production URL when deploying).
+2. **Authentication → Providers**: Enable Google and add OAuth credentials from [Google Cloud Console](https://console.cloud.google.com).
 
 ## Learn More
 

@@ -19,9 +19,8 @@ export default function AppShell({ user, onSignOut, children }: AppShellProps) {
       <Header
         user={user}
         onMenuClick={() => setSidebarOpen((prev) => !prev)}
-        onSignOut={onSignOut}
       />
-      <Sidebar isOpen={sidebarOpen} />
+      <Sidebar isOpen={sidebarOpen} onSignOut={onSignOut} />
       <main
         className={`min-h-[calc(100vh-3.5rem)] transition-all duration-300 ${
           sidebarOpen ? "ml-64" : "ml-0"
