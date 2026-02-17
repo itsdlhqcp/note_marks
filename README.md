@@ -6,7 +6,7 @@ A bookmark management web application built with Next.js and Supabase. Users can
 
 https://note-marks.vercel.app/
 
-## challenging task
+## Challenging task
 
 ### dual sync (realtime + broadcastchannel)
 
