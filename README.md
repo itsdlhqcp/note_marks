@@ -17,6 +17,26 @@ Making sure both Realtime and BroadcastChannel trigger refetches without duplica
 
 ---
 
+Below are the AI tools used during the build :-
+
+I used v0 for logo creation.
+I used Cursor for DUBUGGING AND WIRE-UP through the architecture.
+I used GitHub Copilot for:
+
+Autocomplete and real-time code suggestions
+
+Generating functions
+
+Writing API logic
+
+Filling boilerplate code
+
+User codium (windsurf) for type-script corrections
+
+I used Claude to help generate the BACKGROUND design for the sign-in page.
+
+Here’s the corrected and structured version with referral links added:
+
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
@@ -404,6 +424,12 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint` | Run ESLint |
 
 ---
+
+**referential resources :-**
+
+* next js – [https://nextjs.org/](https://nextjs.org/)
+* tailwind css – [https://tailwindcss.com/](https://tailwindcss.com/)
+* supabase – [https://supabase.com/](https://supabase.com/)
 
 ## License
 
