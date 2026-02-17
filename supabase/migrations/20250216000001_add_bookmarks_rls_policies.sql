@@ -5,7 +5,7 @@ create policy "Users can select own bookmarks"
   on public.bookmarks for select
   using (auth.uid() = user_id);
 
--- INSERT: users can create bookmarks for themselves
+-- INSERT: users can create bookmarks for themselves here
 create policy "Users can insert own bookmarks"
   on public.bookmarks for insert
   with check (auth.uid() = user_id);
