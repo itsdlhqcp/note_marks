@@ -403,11 +403,6 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 
-### Demo & Documentation
-
-- **`docs/DEMO_SCRIPT.md`** — Step-by-step script for presenting the project in a demo
-- **`docs/PROJECT_EXPLANATION.md`** — Point-by-point technical explanation of the codebase
-
 ---
 
 ## License
