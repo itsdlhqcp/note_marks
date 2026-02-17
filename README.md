@@ -6,6 +6,15 @@ LIVE LINK ADDED :-
 
 https://note-marks.vercel.app/
 
+Challenging task: :-
+
+Dual Sync (Realtime + BroadcastChannel)
+
+Subscribing to Supabase Realtime postgres_changes with a user_id filter
+Using BroadcastChannel for cross-tab sync in the same browser
+Using fetchBookmarksRef so callbacks always call the latest fetchBookmarks and avoid stale closures
+Making sure both Realtime and BroadcastChannel trigger refetches without duplicate work or race conditions
+
 ---
 
 ## Table of Contents
