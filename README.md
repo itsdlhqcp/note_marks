@@ -2,7 +2,7 @@
 
 A bookmark management web application built with Next.js and Supabase. Users can sign in with Google, add, edit, and delete bookmarks, with real-time sync across tabs and devices.
 
-## live link added
+## Project Live link
 
 https://note-marks.vercel.app/
 
