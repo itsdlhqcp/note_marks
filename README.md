@@ -6,36 +6,28 @@ LIVE LINK ADDED :-
 
 https://note-marks.vercel.app/
 
-Challenging task: :-
+## challenging task
 
-Dual Sync (Realtime + BroadcastChannel)
+### dual sync (realtime + broadcastchannel)
 
-Subscribing to Supabase Realtime postgres_changes with a user_id filter
-Using BroadcastChannel for cross-tab sync in the same browser
-Using fetchBookmarksRef so callbacks always call the latest fetchBookmarks and avoid stale closures
-Making sure both Realtime and BroadcastChannel trigger refetches without duplicate work or race conditions
+- subscribing to supabase realtime `postgres_changes` with a `user_id` filter  
+- using broadcastchannel for cross-tab sync in the same browser  
+- using `fetchBookmarksRef` so callbacks always call the latest `fetchBookmarks` and avoid stale closures  
+- ensuring both realtime and broadcastchannel trigger refetches without duplicate work or race conditions  
 
 ---
 
-Below are the AI tools used during the build :-
+## ai tools used during the build
 
-I used v0 for logo creation.
-I used Cursor for DUBUGGING AND WIRE-UP through the architecture.
-I used GitHub Copilot for:
+- i used v0 for logo creation.  
+- i used cursor for debugging and wire-up through the architecture.  
+- i used github copilot for:
+  - autocomplete and real-time code suggestions  
+  - generating functions  
+  - writing api logic  
+  - filling boilerplate code  
+- i used codium (winds
 
-Autocomplete and real-time code suggestions
-
-Generating functions
-
-Writing API logic
-
-Filling boilerplate code
-
-User codium (windsurf) for type-script corrections
-
-I used Claude to help generate the BACKGROUND design for the sign-in page.
-
-Here’s the corrected and structured version with referral links added:
 
 ## Table of Contents
 
