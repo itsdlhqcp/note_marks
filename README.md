@@ -26,7 +26,7 @@ https://note-marks.vercel.app/
   - generating functions  
   - writing api logic  
   - filling boilerplate code  
-- i used codium (winds
+- i used codium for typscript syntax reframing and typo corrections
 
 
 ## Table of Contents
