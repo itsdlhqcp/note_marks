@@ -17,7 +17,7 @@ https://note-marks.vercel.app/
 
 ---
 
-## ai tools used during the build
+## AI tools used during the build
 
 - i used v0 for logo creation.  
 - i used cursor for debugging and wire-up through the architecture.  
