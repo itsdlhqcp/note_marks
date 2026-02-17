@@ -28,6 +28,8 @@ https://note-marks.vercel.app/
   - filling boilerplate code  
 - i used codium for typscript syntax reframing and typo corrections
 
+## Content Note :-
+https://itsdlhqcp.github.io/notex/
 
 ## Table of Contents
 
