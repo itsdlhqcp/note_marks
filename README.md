@@ -430,6 +430,8 @@ Open [http://localhost:3000](http://localhost:3000).
 * next js – [https://nextjs.org/](https://nextjs.org/)
 * tailwind css – [https://tailwindcss.com/](https://tailwindcss.com/)
 * supabase – [https://supabase.com/](https://supabase.com/)
+  -- supabase google auth - https://supabase.com/docs/guides/auth/social-login/auth-google
+  -- supabase real time sync - https://supabase.com/realtime
 
 ## License
 
